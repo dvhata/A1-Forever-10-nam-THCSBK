@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Hero from '@/components/Hero';
 import ImageCarousel from '@/components/ImageCarousel';
+import Invitation from '@/components/Invitation';
 import Chalkboard from '@/components/Chalkboard';
 import DataHub from '@/components/DataHub';
 import { MessageWall } from '@/components/MessageWall';
@@ -50,6 +51,7 @@ export default function Home() {
     <main className="min-h-screen" style={{ background: '#FDFAF6' }}>
       <Hero />
       <ImageCarousel />
+      <Invitation />
       <Chalkboard />
       <DataHub />
 

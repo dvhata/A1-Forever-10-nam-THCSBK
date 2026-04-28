@@ -22,7 +22,10 @@ export function MemberForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submittedMembers, setSubmittedMembers] = useState<Set<string>>(new Set());
+  const [errorMessage, setErrorMessage] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadLabel, setUploadLabel] = useState('');
 
   const available = useMemo(() => CLASS_MEMBERS.filter(m => !submittedMembers.has(m)), [submittedMembers]);
   const filtered = useMemo(() => searchQuery.trim()
@@ -37,18 +40,38 @@ export function MemberForm() {
     if (!formData.name) { alert('Vui lòng chọn tên của bạn'); return; }
     if (submittedMembers.has(formData.name)) { alert('Bạn đã cập nhật thông tin rồi!'); return; }
     setLoading(true);
+    setErrorMessage('');
+    setUploadProgress(null);
+    setUploadLabel('');
     try {
       await addMember({ name:formData.name, jobCategory:formData.jobCategory, jobDetail:formData.jobDetail, maritalStatus:formData.maritalStatus, location:formData.location });
       if (formData.message.trim()) await addMessage({ memberName:formData.name, message:formData.message, memberId:formData.name });
-      for (const f of photoFiles) { const url = await uploadMediaFile(f, formData.name,'photo'); await addMedia({ memberId:formData.name, memberName:formData.name, type:'photo', url }); }
-      if (videoFile) { const url = await uploadMediaFile(videoFile, formData.name,'video'); await addMedia({ memberId:formData.name, memberName:formData.name, type:'video', url }); }
+      for (const f of photoFiles) {
+        setUploadLabel(`Đang tải ảnh: ${f.name}`);
+        const url = await uploadMediaFile(f, formData.name,'photo', setUploadProgress);
+        await addMedia({ memberId:formData.name, memberName:formData.name, type:'photo', url });
+      }
+      if (videoFile) {
+        setUploadLabel(`Đang tải video: ${videoFile.name}`);
+        const url = await uploadMediaFile(videoFile, formData.name,'video', setUploadProgress);
+        await addMedia({ memberId:formData.name, memberName:formData.name, type:'video', url });
+      }
       setSubmittedMembers(p => new Set([...p, formData.name]));
       setSubmitted(true);
       setFormData({ name:'', jobCategory:'', jobDetail:'', maritalStatus:'', location:'', message:'' });
       setPhotoFiles([]); setVideoFile(null);
       setTimeout(() => setSubmitted(false), 4000);
-    } catch { alert('Có lỗi xảy ra. Vui lòng thử lại.'); }
-    finally { setLoading(false); }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      const message = error instanceof Error ? error.message : 'Có lỗi xảy ra. Vui lòng thử lại.';
+      setErrorMessage(message);
+      alert(message);
+    }
+    finally {
+      setLoading(false);
+      setUploadLabel('');
+      setUploadProgress(null);
+    }
   };
 
   const selectStyle: React.CSSProperties = {
@@ -201,6 +224,25 @@ export function MemberForm() {
         <button type="submit" disabled={loading} className="btn-primary w-full text-center">
           {loading ? '⏳ Đang gửi...' : '🌸 Gửi thông tin'}
         </button>
+
+        {uploadLabel && (
+          <div className="rounded-xl p-4 text-center"
+            style={{ background:'rgba(168,212,236,0.2)', border:'1.5px solid rgba(168,212,236,0.45)' }}>
+            <p className="text-xs font-montserrat" style={{ color:'#3D7A9A' }}>{uploadLabel}</p>
+            {typeof uploadProgress === 'number' && (
+              <p className="text-xs font-montserrat mt-1" style={{ color:'#3D7A9A' }}>{uploadProgress}%</p>
+            )}
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="rounded-xl p-4 text-center"
+            style={{ background:'rgba(242,167,184,0.2)', border:'1.5px solid rgba(224,120,152,0.45)' }}>
+            <p className="text-xs font-montserrat" style={{ color:'#B4516A' }}>
+              {errorMessage}
+            </p>
+          </div>
+        )}
 
         {submitted && (
           <div className="rounded-xl p-4 text-center"

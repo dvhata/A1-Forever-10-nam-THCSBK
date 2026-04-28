@@ -180,8 +180,28 @@ export default function Hero() {
 
         {/* CTAs */}
         <div className="hero-item mt-10 flex flex-col sm:flex-row items-center gap-4">
+          {/* Thiệp mời — nổi bật nhất */}
+          <a
+            href="#invitation"
+            className="inline-flex items-center gap-2 font-montserrat font-bold text-sm tracking-wide px-7 py-3.5 rounded-full transition-all duration-200"
+            style={{
+              background: 'linear-gradient(135deg,#F2A7B8,#C4B5E0)',
+              color: '#fff',
+              boxShadow: '0 6px 24px rgba(224,120,152,0.35)',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-2px)';
+              (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 10px 32px rgba(224,120,152,0.45)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLAnchorElement).style.transform = 'none';
+              (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 6px 24px rgba(224,120,152,0.35)';
+            }}
+          >
+            💌 Xem thiệp mời
+          </a>
           <a href="#datahub" className="btn-primary">
-            ✏️ Chia sẻ thông tin của bạn
+            ✏️ Chia sẻ thông tin
           </a>
           <a href="#memories" className="btn-outline">
             📷 Xem kỷ niệm ↓

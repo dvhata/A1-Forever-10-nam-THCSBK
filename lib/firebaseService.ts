@@ -6,7 +6,7 @@ import {
   query,
   Unsubscribe,
 } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { db, storage } from './firebase';
 import { MediaItem, Member, Message } from './types';
 
@@ -31,13 +31,46 @@ export async function addMessage(message: Omit<Message, 'id' | 'timestamp'>): Pr
 export async function uploadMediaFile(
   file: File,
   memberName: string,
-  type: MediaItem['type']
+  type: MediaItem['type'],
+  onProgress?: (progress: number) => void
 ): Promise<string> {
   const safeName = toSafePath(memberName || 'unknown');
   const filePath = `media/${type}/${safeName}/${Date.now()}-${file.name}`;
   const storageRef = ref(storage, filePath);
-  await uploadBytes(storageRef, file);
-  return getDownloadURL(storageRef);
+  onProgress?.(0);
+  const task = uploadBytesResumable(storageRef, file, {
+    contentType: file.type || undefined,
+  });
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Upload timeout'));
+      }, 5 * 60 * 1000);
+
+      task.on(
+        'state_changed',
+        (snapshot) => {
+          if (!onProgress) return;
+          const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          onProgress(percent);
+        },
+        (error) => {
+          clearTimeout(timeout);
+          reject(error);
+        },
+        () => {
+          clearTimeout(timeout);
+          resolve();
+        }
+      );
+    });
+
+    return getDownloadURL(task.snapshot.ref);
+  } catch (error) {
+    console.error('Firebase upload failed:', error);
+    throw error;
+  }
 }
 
 export async function addMedia(media: Omit<MediaItem, 'id' | 'timestamp'>): Promise<string> {
