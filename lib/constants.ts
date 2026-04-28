@@ -29,7 +29,7 @@ export const JOB_CATEGORIES = [
   'Khác',
 ];
 
-export const MARITAL_STATUS = ['Độc Thân', 'Kết Hôn', 'Khác'];
+export const MARITAL_STATUS = ['Độc Thân', 'Kết Hôn', 'Có ny', 'Chưa yêu ai bao giờ', 'Ế', 'Khác'];
 
 export const LOCATIONS = [
   'Hà Nội',

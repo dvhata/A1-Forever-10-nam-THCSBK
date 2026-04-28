@@ -1,19 +1,20 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { CLASS_MEMBERS, JOB_CATEGORIES, MARITAL_STATUS, LOCATIONS, COLORS } from '@/lib/constants';
+import { CLASS_MEMBERS, JOB_CATEGORIES, MARITAL_STATUS, LOCATIONS } from '@/lib/constants';
 import { addMedia, addMember, addMessage, uploadMediaFile } from '@/lib/firebaseService';
 
-export function MemberForm() {
-  const [formData, setFormData] = useState({
-    name: '',
-    jobCategory: '',
-    jobDetail: '',
-    maritalStatus: '',
-    location: '',
-    message: '',
-  });
+const label = (text: string) => (
+  <label
+    className="block text-xs font-montserrat font-semibold tracking-widest uppercase mb-2"
+    style={{ color: '#5A8FAF' }}
+  >
+    {text}
+  </label>
+);
 
+export function MemberForm() {
+  const [formData, setFormData] = useState({ name:'', jobCategory:'', jobDetail:'', maritalStatus:'', location:'', message:'' });
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,395 +24,190 @@ export function MemberForm() {
   const [submittedMembers, setSubmittedMembers] = useState<Set<string>>(new Set());
   const [dragActive, setDragActive] = useState(false);
 
-  const availableMembers = useMemo(() => {
-    return CLASS_MEMBERS.filter(member => !submittedMembers.has(member));
-  }, [submittedMembers]);
+  const available = useMemo(() => CLASS_MEMBERS.filter(m => !submittedMembers.has(m)), [submittedMembers]);
+  const filtered = useMemo(() => searchQuery.trim()
+    ? available.filter(m => m.toLowerCase().includes(searchQuery.toLowerCase()))
+    : available, [searchQuery, available]);
 
-  const filteredMembers = useMemo(() => {
-    if (!searchQuery.trim()) return availableMembers;
-    return availableMembers.filter(member =>
-      member.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery, availableMembers]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleNameSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    setShowDropdown(true);
-  };
-
-  const selectMember = (memberName: string) => {
-    setFormData((prev) => ({ ...prev, name: memberName }));
-    setSearchQuery('');
-    setShowDropdown(false);
-  };
-
-  const handlePhotoDrag = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  };
-
-  const handlePhotoDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    const files = Array.from(e.dataTransfer.files);
-    const photoFilesList = files.filter(
-      (file) => file.type.startsWith('image/') && ['jpg', 'jpeg', 'png'].some(ext => file.type.includes(ext))
-    );
-
-    if (photoFilesList.length + photoFiles.length > 3) {
-      alert('Tối đa 3 ảnh!');
-      return;
-    }
-
-    setPhotoFiles((prev) => [...prev, ...photoFilesList]);
-  };
-
-  const handlePhotoInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      if (files.length + photoFiles.length > 3) {
-        alert('Tối đa 3 ảnh!');
-        return;
-      }
-      setPhotoFiles((prev) => [...prev, ...files]);
-    }
-  };
-
-  const handleVideoInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setVideoFile(e.target.files[0]);
-    }
-  };
-
-  const removePhoto = (index: number) => {
-    setPhotoFiles((prev) => prev.filter((_, i) => i !== index));
-  };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>) =>
+    setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.name) {
-      alert('Vui lòng chọn tên của bạn');
-      return;
-    }
-
-    if (submittedMembers.has(formData.name)) {
-      alert('Bạn đã cập nhật thông tin rồi!');
-      return;
-    }
-
+    if (!formData.name) { alert('Vui lòng chọn tên của bạn'); return; }
+    if (submittedMembers.has(formData.name)) { alert('Bạn đã cập nhật thông tin rồi!'); return; }
     setLoading(true);
-
     try {
-      // Add member info
-      await addMember({
-        name: formData.name,
-        jobCategory: formData.jobCategory,
-        jobDetail: formData.jobDetail,
-        maritalStatus: formData.maritalStatus,
-        location: formData.location,
-      });
-
-      // Add message if provided
-      if (formData.message.trim()) {
-        await addMessage({
-          memberName: formData.name,
-          message: formData.message,
-          memberId: formData.name,
-        });
-      }
-
-      // Add photos
-      for (const photoFile of photoFiles) {
-        const url = await uploadMediaFile(photoFile, formData.name, 'photo');
-        await addMedia({
-          memberId: formData.name,
-          memberName: formData.name,
-          type: 'photo',
-          url,
-        });
-      }
-
-      // Add video
-      if (videoFile) {
-        const url = await uploadMediaFile(videoFile, formData.name, 'video');
-        await addMedia({
-          memberId: formData.name,
-          memberName: formData.name,
-          type: 'video',
-          url,
-        });
-      }
-
-      setSubmittedMembers((prev) => new Set([...prev, formData.name]));
+      await addMember({ name:formData.name, jobCategory:formData.jobCategory, jobDetail:formData.jobDetail, maritalStatus:formData.maritalStatus, location:formData.location });
+      if (formData.message.trim()) await addMessage({ memberName:formData.name, message:formData.message, memberId:formData.name });
+      for (const f of photoFiles) { const url = await uploadMediaFile(f, formData.name,'photo'); await addMedia({ memberId:formData.name, memberName:formData.name, type:'photo', url }); }
+      if (videoFile) { const url = await uploadMediaFile(videoFile, formData.name,'video'); await addMedia({ memberId:formData.name, memberName:formData.name, type:'video', url }); }
+      setSubmittedMembers(p => new Set([...p, formData.name]));
       setSubmitted(true);
-      setFormData({ name: '', jobCategory: '', jobDetail: '', maritalStatus: '', location: '', message: '' });
-      setPhotoFiles([]);
-      setVideoFile(null);
-      setTimeout(() => setSubmitted(false), 3000);
-    } catch (error) {
-      console.error('Lỗi:', error);
-      alert('Có lỗi xảy ra. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
-    }
+      setFormData({ name:'', jobCategory:'', jobDetail:'', maritalStatus:'', location:'', message:'' });
+      setPhotoFiles([]); setVideoFile(null);
+      setTimeout(() => setSubmitted(false), 4000);
+    } catch { alert('Có lỗi xảy ra. Vui lòng thử lại.'); }
+    finally { setLoading(false); }
+  };
+
+  const selectStyle: React.CSSProperties = {
+    width:'100%', padding:'0.75rem 1rem',
+    background:'rgba(255,255,255,0.9)',
+    border:'1.5px solid rgba(200,230,245,0.8)',
+    borderRadius:'0.625rem',
+    color:'#2C4A6E', fontFamily:'inherit', fontSize:'0.875rem', outline:'none',
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6 p-8 rounded-lg border border-[#0B4D8C]/20" style={{
-        background: 'rgba(255, 251, 245, 0.85)',
-        backdropFilter: 'blur(10px)',
-      }}>
-        <h2 className="text-3xl font-playfair font-bold text-center text-[#0B4D8C]">
-          Chia Sẻ Thông Tin
-        </h2>
+    <div className="card-soft p-7 sm:p-9">
+      <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* Name Dropdown with Search */}
+        {/* Name search */}
         <div className="relative">
-          <label className="block text-sm font-semibold mb-2 text-[#0B4D8C]">
-            Tên của bạn
-          </label>
+          {label('Tên của bạn *')}
           <input
+            className="input-soft"
             type="text"
             value={formData.name || searchQuery}
-            onChange={handleNameSearch}
+            onChange={e => { setSearchQuery(e.target.value); setFormData(p => ({...p, name:''})); setShowDropdown(true); }}
             onFocus={() => setShowDropdown(true)}
-            placeholder="Tìm kiếm tên..."
-            className="w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors"
-            style={{
-              borderColor: COLORS.border,
-              '--tw-ring-color': COLORS.primary,
-            } as React.CSSProperties}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+            placeholder="Tìm tên của bạn..."
           />
-          {showDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto"
-              style={{ borderColor: COLORS.border }}>
-              {filteredMembers.slice(0, 8).map((member) => (
+          {showDropdown && filtered.length > 0 && (
+            <div
+              className="absolute top-full left-0 right-0 mt-1 z-20 max-h-52 overflow-y-auto rounded-xl shadow-lg"
+              style={{ background:'rgba(255,255,255,0.96)', border:'1.5px solid rgba(200,230,245,0.7)', backdropFilter:'blur(8px)' }}
+            >
+              {filtered.slice(0,8).map(m => (
                 <button
-                  key={member}
-                  type="button"
-                  onClick={() => selectMember(member)}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors text-sm"
-                  style={{ color: COLORS.secondary }}
+                  key={m} type="button"
+                  onMouseDown={() => { setFormData(p => ({...p, name:m})); setSearchQuery(''); setShowDropdown(false); }}
+                  className="w-full text-left px-4 py-2.5 text-sm font-montserrat transition-colors"
+                  style={{ color:'#3D5A7A' }}
+                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = 'rgba(242,167,184,0.1)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = 'transparent'}
                 >
-                  {member}
+                  {m}
                 </button>
               ))}
             </div>
           )}
+          {formData.name && (
+            <p className="text-xs font-montserrat mt-2" style={{ color:'#5A9A70' }}>✓ Đã chọn: {formData.name}</p>
+          )}
         </div>
 
-        {/* Job Category */}
+        {/* Job category */}
         <div>
-          <label className="block text-sm font-semibold mb-2 text-[#0B4D8C]">
-            Lĩnh vực công việc
-          </label>
-          <select
-            name="jobCategory"
-            value={formData.jobCategory}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors bg-white"
-            style={{
-              borderColor: COLORS.border,
-              '--tw-ring-color': COLORS.primary,
-            } as React.CSSProperties}
-          >
+          {label('Lĩnh vực công việc')}
+          <select name="jobCategory" value={formData.jobCategory} onChange={handleChange} style={selectStyle}>
             <option value="">Chọn lĩnh vực</option>
-            {JOB_CATEGORIES.map((category) => (
-              <option key={category} value={category}>{category}</option>
-            ))}
+            {JOB_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
 
-        {/* Job Detail */}
+        {/* Job detail */}
         <div>
-          <label className="block text-sm font-semibold mb-2 text-[#0B4D8C]">
-            Chi tiết công việc
-          </label>
-          <input
-            type="text"
-            name="jobDetail"
-            value={formData.jobDetail}
-            onChange={handleChange}
-            placeholder="Ví dụ: Senior Developer"
-            className="w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors"
-            style={{
-              borderColor: COLORS.border,
-              '--tw-ring-color': COLORS.primary,
-            } as React.CSSProperties}
-          />
+          {label('Chi tiết công việc')}
+          <input name="jobDetail" type="text" value={formData.jobDetail} onChange={handleChange}
+            placeholder="Ví dụ: Giáo viên, Lập trình viên..." className="input-soft" />
         </div>
 
-        {/* Marital Status */}
-        <div>
-          <label className="block text-sm font-semibold mb-2 text-[#0B4D8C]">
-            Tình trạng hôn nhân
-          </label>
-          <select
-            name="maritalStatus"
-            value={formData.maritalStatus}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors bg-white"
-            style={{
-              borderColor: COLORS.border,
-              '--tw-ring-color': COLORS.primary,
-            } as React.CSSProperties}
-          >
-            <option value="">Chọn tình trạng</option>
-            {MARITAL_STATUS.map((status) => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Location */}
-        <div>
-          <label className="block text-sm font-semibold mb-2 text-[#0B4D8C]">
-            Nơi sống
-          </label>
-          <select
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors bg-white"
-            style={{
-              borderColor: COLORS.border,
-              '--tw-ring-color': COLORS.primary,
-            } as React.CSSProperties}
-          >
-            <option value="">Chọn nơi sống</option>
-            {LOCATIONS.map((location) => (
-              <option key={location} value={location}>{location}</option>
-            ))}
-          </select>
+        {/* Marital + Location */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            {label('Tình trạng hôn nhân')}
+            <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} style={selectStyle}>
+              <option value="">Chọn</option>
+              {MARITAL_STATUS.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            {label('Nơi sống')}
+            <select name="location" value={formData.location} onChange={handleChange} style={selectStyle}>
+              <option value="">Chọn</option>
+              {LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
         </div>
 
         {/* Message */}
         <div>
-          <label className="block text-sm font-semibold mb-2 text-[#0B4D8C]">
-            Lời nhắn (tùy chọn)
-          </label>
-          <textarea
-            name="message"
-            value={formData.message}
-            onChange={handleChange}
-            placeholder="Chia sẻ điều gì đó..."
-            rows={4}
-            className="w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors resize-none"
-            style={{
-              borderColor: COLORS.border,
-              '--tw-ring-color': COLORS.primary,
-            } as React.CSSProperties}
-          />
+          {label('Lời nhắn gửi cả lớp 💌')}
+          <textarea name="message" value={formData.message} onChange={handleChange} rows={4}
+            placeholder="Chia sẻ cảm xúc, kỷ niệm hoặc lời chúc..." className="input-soft" style={{ resize:'none' }} />
         </div>
 
-        {/* Photo Upload */}
+        {/* Photo upload */}
         <div>
-          <label className="block text-sm font-semibold mb-2 text-[#0B4D8C]">
-            Tải ảnh (tối đa 3)
-          </label>
+          {label('Ảnh kỷ niệm (tối đa 3)')}
           <div
-            onDragEnter={handlePhotoDrag}
-            onDragLeave={handlePhotoDrag}
-            onDragOver={handlePhotoDrag}
-            onDrop={handlePhotoDrop}
-            className="w-full p-6 border-2 border-dashed rounded-lg text-center transition-colors cursor-pointer"
+            onDragEnter={e => { e.preventDefault(); setDragActive(true); }}
+            onDragLeave={e => { e.preventDefault(); setDragActive(false); }}
+            onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+            onDrop={e => {
+              e.preventDefault(); setDragActive(false);
+              const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+              if (files.length + photoFiles.length > 3) { alert('Tối đa 3 ảnh!'); return; }
+              setPhotoFiles(p => [...p, ...files]);
+            }}
+            className="rounded-xl p-6 text-center cursor-pointer transition-all"
             style={{
-              borderColor: dragActive ? COLORS.primary : COLORS.border,
-              backgroundColor: dragActive ? 'rgba(255, 107, 0, 0.05)' : 'transparent',
+              border: `2px dashed ${dragActive ? '#E07898' : 'rgba(200,230,245,0.8)'}`,
+              background: dragActive ? 'rgba(242,167,184,0.08)' : 'rgba(255,255,255,0.5)',
             }}
           >
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handlePhotoInput}
-              className="hidden"
-              id="photo-input"
-            />
+            <input type="file" multiple accept="image/*" id="photo-input" className="hidden"
+              onChange={e => {
+                if (!e.target.files) return;
+                const files = Array.from(e.target.files);
+                if (files.length + photoFiles.length > 3) { alert('Tối đa 3 ảnh!'); return; }
+                setPhotoFiles(p => [...p, ...files]);
+              }} />
             <label htmlFor="photo-input" className="cursor-pointer">
-              <p style={{ color: COLORS.secondary }} className="font-semibold">
-                Kéo thả ảnh hoặc nhấp để chọn
-              </p>
-              <p style={{ color: COLORS.text }} className="text-sm opacity-60 mt-1">
-                JPG, PNG tối đa 3MB
+              <p className="text-2xl mb-2">📷</p>
+              <p className="text-sm font-montserrat" style={{ color:'rgba(44,74,110,0.6)' }}>
+                Kéo thả hoặc <span style={{ color:'#E07898', textDecoration:'underline' }}>nhấp để chọn</span>
               </p>
             </label>
           </div>
           {photoFiles.length > 0 && (
-            <div className="mt-4 space-y-2">
-              {photoFiles.map((file, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm" style={{ color: COLORS.text }}>{file.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(index)}
-                    className="text-sm px-3 py-1 rounded border"
-                    style={{ borderColor: COLORS.primary, color: COLORS.primary }}
-                  >
-                    Xóa
-                  </button>
+            <div className="mt-3 space-y-2">
+              {photoFiles.map((f, i) => (
+                <div key={i} className="flex items-center justify-between px-4 py-2 rounded-lg"
+                  style={{ background:'rgba(242,167,184,0.1)', border:'1px solid rgba(224,120,152,0.2)' }}>
+                  <span className="text-xs font-montserrat truncate" style={{ color:'#3D5A7A' }}>{f.name}</span>
+                  <button type="button" onClick={() => setPhotoFiles(p => p.filter((_,j) => j!==i))}
+                    className="text-xs font-montserrat ml-3 shrink-0" style={{ color:'#E07898' }}>✕ Xóa</button>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Video Upload */}
+        {/* Video */}
         <div>
-          <label className="block text-sm font-semibold mb-2 text-[#0B4D8C]">
-            Tải video (tùy chọn)
-          </label>
-          <input
-            type="file"
-            accept="video/*"
-            onChange={handleVideoInput}
-            className="w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors"
-            style={{
-              borderColor: COLORS.border,
-              '--tw-ring-color': COLORS.primary,
-            } as React.CSSProperties}
-          />
-          {videoFile && (
-            <p className="text-sm mt-2" style={{ color: COLORS.text }}>
-              Đã chọn: {videoFile.name}
-            </p>
-          )}
+          {label('Video lời nhắn (tùy chọn)')}
+          <input type="file" accept="video/*" className="input-soft cursor-pointer"
+            onChange={e => { if (e.target.files?.[0]) setVideoFile(e.target.files[0]); }} />
+          {videoFile && <p className="text-xs font-montserrat mt-2" style={{ color:'#5A9A70' }}>✓ {videoFile.name}</p>}
         </div>
 
-        {/* Submit Button - Vibrant Orange CTA */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 font-bold text-white rounded-lg transition-all duration-200 border-2 border-[#FF6B00] hover:shadow-lg hover:shadow-[#FF6B00]/30"
-          style={{
-            backgroundColor: loading ? '#E55A00' : '#FF6B00',
-            opacity: loading ? 0.7 : 1,
-          }}
-        >
-          {loading ? 'Đang gửi...' : 'Gửi Thông Tin'}
+        <div className="divider-rose" />
+
+        {/* Submit */}
+        <button type="submit" disabled={loading} className="btn-primary w-full text-center">
+          {loading ? '⏳ Đang gửi...' : '🌸 Gửi thông tin'}
         </button>
 
-        {/* Success Message */}
         {submitted && (
-          <div
-            className="p-4 rounded-lg text-white text-center font-bold"
-            style={{ backgroundColor: '#28a745' }}
-          >
-            Cập nhật thành công!
+          <div className="rounded-xl p-4 text-center"
+            style={{ background:'rgba(168,212,236,0.2)', border:'1.5px solid rgba(168,212,236,0.5)' }}>
+            <p className="font-dancing text-lg" style={{ color:'#3D7A9A' }}>
+              🎉 Cảm ơn bạn đã chia sẻ!
+            </p>
           </div>
         )}
       </form>
