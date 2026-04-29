@@ -31,6 +31,7 @@ interface Member {
   name: string;
   jobCategory: string;
   jobDetail: string;
+  workUnit: string;
   maritalStatus: string;
   location: string;
   photoUrls?: string[];     // Array of photo URLs
