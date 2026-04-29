@@ -336,8 +336,9 @@ export function Analytics() {
             <div className="col-span-3">Tên</div>
             <div className="col-span-2">Ngành nghề</div>
             <div className="col-span-2">Chi tiết lĩnh vực</div>
-            <div className="col-span-2">Hôn nhân</div>
-            <div className="col-span-2">Nơi làm việc</div>
+            <div className="col-span-2">Đơn vị công tác</div>
+            <div className="col-span-1">Hôn nhân</div>
+            <div className="col-span-1">Nơi làm việc</div>
           </div>
 
           {members.length === 0 ? (
@@ -371,9 +372,12 @@ export function Analytics() {
                 {m.jobDetail || '—'}
               </div>
               <div className="col-span-2 text-xs" style={{ color:'#5A8FAF' }}>
+                {m.workUnit || '—'}
+              </div>
+              <div className="col-span-1 text-xs" style={{ color:'#5A8FAF' }}>
                 {m.maritalStatus ? `${MARITAL_ICONS[m.maritalStatus]??''} ${m.maritalStatus}` : '—'}
               </div>
-              <div className="col-span-2 text-xs" style={{ color:'#5A8FAF' }}>
+              <div className="col-span-1 text-xs" style={{ color:'#5A8FAF' }}>
                 {m.location||'—'}
               </div>
             </div>

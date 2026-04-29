@@ -14,7 +14,7 @@ const label = (text: string) => (
 );
 
 export function MemberForm() {
-  const [formData, setFormData] = useState({ name:'', jobCategory:'', jobDetail:'', maritalStatus:'', location:'', message:'' });
+  const [formData, setFormData] = useState({ name:'', jobCategory:'', jobDetail:'', workUnit:'', maritalStatus:'', location:'', message:'' });
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -37,11 +37,11 @@ export function MemberForm() {
     setLoading(true);
     setErrorMessage('');
     try {
-      await addMember({ name:formData.name, jobCategory:formData.jobCategory, jobDetail:formData.jobDetail, maritalStatus:formData.maritalStatus, location:formData.location });
+      await addMember({ name:formData.name, jobCategory:formData.jobCategory, jobDetail:formData.jobDetail, workUnit:formData.workUnit, maritalStatus:formData.maritalStatus, location:formData.location });
       if (formData.message.trim()) await addMessage({ memberName:formData.name, message:formData.message, memberId:formData.name });
       setSubmittedMembers(p => new Set([...p, formData.name]));
       setSubmitted(true);
-      setFormData({ name:'', jobCategory:'', jobDetail:'', maritalStatus:'', location:'', message:'' });
+      setFormData({ name:'', jobCategory:'', jobDetail:'', workUnit:'', maritalStatus:'', location:'', message:'' });
       setTimeout(() => setSubmitted(false), 4000);
     } catch (error) {
       console.error('Submit failed:', error);
@@ -115,6 +115,13 @@ export function MemberForm() {
           {label('Chi tiết công việc')}
           <input name="jobDetail" type="text" value={formData.jobDetail} onChange={handleChange}
             placeholder="Ví dụ: Giáo viên, Lập trình viên..." className="input-soft" />
+        </div>
+
+        {/* Work unit */}
+        <div>
+          {label('Đơn vị công tác')}
+          <input name="workUnit" type="text" value={formData.workUnit} onChange={handleChange}
+            placeholder="Ví dụ: Trường THCS Bắc Kạn, Công ty ABC..." className="input-soft" />
         </div>
 
         {/* Marital + Location */}
