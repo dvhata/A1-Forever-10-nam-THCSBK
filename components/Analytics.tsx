@@ -329,14 +329,14 @@ export function Analytics() {
         <div className="card-soft overflow-hidden">
           {/* Header */}
           <div
-            className="grid grid-cols-12 px-5 py-3 text-xs font-montserrat font-semibold tracking-widest uppercase"
+            className="grid grid-cols-[0.6fr_2.4fr_1.6fr_1.6fr_1.6fr_1.4fr_1.4fr] px-5 py-3 text-xs font-montserrat font-semibold tracking-widest uppercase"
             style={{ background:'linear-gradient(135deg,rgba(242,167,184,0.15),rgba(168,212,236,0.15))', borderBottom:'1px solid rgba(200,230,245,0.5)', color:'#5A8FAF' }}
           >
             <div className="col-span-1">#</div>
-            <div className="col-span-3">Tên</div>
-            <div className="col-span-2">Ngành nghề</div>
-            <div className="col-span-2">Chi tiết lĩnh vực</div>
-            <div className="col-span-2">Đơn vị công tác</div>
+            <div className="col-span-1">Tên</div>
+            <div className="col-span-1">Ngành nghề</div>
+            <div className="col-span-1">Chi tiết lĩnh vực</div>
+            <div className="col-span-1">Đơn vị công tác</div>
             <div className="col-span-1">Hôn nhân</div>
             <div className="col-span-1">Nơi làm việc</div>
           </div>
@@ -349,7 +349,7 @@ export function Analytics() {
           ) : members.map((m, i) => (
             <div
               key={m.id}
-              className="grid grid-cols-12 px-5 py-3.5 text-sm font-montserrat items-center transition-colors duration-150"
+              className="grid grid-cols-[0.6fr_2.4fr_1.6fr_1.6fr_1.6fr_1.4fr_1.4fr] px-5 py-3.5 text-sm font-montserrat items-center transition-colors duration-150"
               style={{
                 borderBottom:'1px solid rgba(200,230,245,0.25)',
                 background: i%2===0 ? 'rgba(240,247,253,0.3)' : 'transparent',
@@ -360,18 +360,18 @@ export function Analytics() {
               <div className="col-span-1 text-xs tabular-nums" style={{ color:'rgba(168,212,236,0.7)' }}>
                 {String(i+1).padStart(2,'0')}
               </div>
-              <div className="col-span-3">
+              <div className="col-span-1">
                 <p style={{ color:'#2C4A6E' }}>{m.name}</p>
               </div>
-              <div className="col-span-2">
+              <div className="col-span-1">
                 {m.jobCategory
                   ? <span className="inline-block px-2 py-0.5 text-xs rounded-full" style={{ background:'rgba(242,167,184,0.18)', color:'#C0607E', border:'1px solid rgba(224,120,152,0.25)' }}>{m.jobCategory}</span>
                   : <span style={{ color:'rgba(44,74,110,0.25)' }}>—</span>}
               </div>
-              <div className="col-span-2 text-xs" style={{ color:'#5A8FAF' }}>
+              <div className="col-span-1 text-xs" style={{ color:'#5A8FAF' }}>
                 {m.jobDetail || '—'}
               </div>
-              <div className="col-span-2 text-xs" style={{ color:'#5A8FAF' }}>
+              <div className="col-span-1 text-xs" style={{ color:'#5A8FAF' }}>
                 {m.workUnit || '—'}
               </div>
               <div className="col-span-1 text-xs" style={{ color:'#5A8FAF' }}>
