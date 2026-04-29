@@ -60,7 +60,11 @@ export default function MediaUpload() {
   };
 
   return (
-    <section className="py-20 sm:py-28" style={{ background: 'linear-gradient(160deg, #EEF7FC 0%, #FDE8EE 100%)' }}>
+    <section
+      id="media-upload"
+      className="py-20 sm:py-28"
+      style={{ background: 'linear-gradient(160deg, #EEF7FC 0%, #FDE8EE 100%)' }}
+    >
       <div className="max-w-2xl mx-auto px-6 sm:px-12">
 
         <div className="mb-10 reveal">

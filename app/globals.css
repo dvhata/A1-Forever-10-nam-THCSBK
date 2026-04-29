@@ -196,6 +196,106 @@ html { scroll-behavior: smooth; }
   border-color: #A8D4EC;
 }
 
+/* ── Floating CTA buttons ────────────────────────────────────── */
+.floating-cta-group {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.floating-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.6rem 0.95rem;
+  min-height: 2.8rem;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  box-shadow: 0 10px 26px rgba(60,80,120,0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.5);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  animation: ctaFloat 4.2s ease-in-out infinite, ctaGlow 2.8s ease-in-out infinite;
+  pointer-events: auto;
+}
+
+.floating-cta-icon {
+  font-size: 1.1rem;
+}
+
+.floating-cta-text {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.floating-cta-primary {
+  background: linear-gradient(135deg, rgba(242,167,184,0.95), rgba(196,181,224,0.95));
+  color: #ffffff;
+  animation-delay: 0s;
+}
+
+.floating-cta-secondary {
+  background: rgba(255,255,255,0.9);
+  color: #2C4A6E;
+  border: 1.5px solid rgba(168,212,236,0.6);
+  animation-delay: 0.4s;
+}
+
+.floating-cta:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 26px rgba(60,80,120,0.22);
+}
+
+.floating-cta:active { transform: translateY(0); }
+
+@keyframes ctaFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes ctaGlow {
+  0%, 100% { box-shadow: 0 10px 26px rgba(60,80,120,0.2); }
+  50% { box-shadow: 0 14px 30px rgba(224,120,152,0.28); }
+}
+
+@media (max-width: 900px) {
+  .floating-cta-group {
+    right: 0.9rem;
+    bottom: 0.9rem;
+  }
+  .floating-cta {
+    padding: 0.55rem 0.85rem;
+    min-height: 2.6rem;
+  }
+  .floating-cta-icon { font-size: 1rem; }
+  .floating-cta-text { font-size: 0.7rem; }
+}
+
+@media (max-width: 640px) {
+  .floating-cta-group {
+    right: 0.6rem;
+    bottom: 0.6rem;
+  }
+  .floating-cta {
+    padding: 0.5rem 0.75rem;
+    min-height: 2.4rem;
+    font-size: 0.66rem;
+  }
+  .floating-cta-icon { font-size: 0.95rem; }
+  .floating-cta-text { font-size: 0.64rem; }
+}
+
 /* ── Input fields ──────────────────────────────────────────────── */
 .input-soft {
   width: 100%;

@@ -201,10 +201,7 @@ export default function Hero() {
             💌 Xem thiệp mời
           </a>
           <a href="#datahub" className="btn-primary">
-            ✏️ Chia sẻ thông tin
-          </a>
-          <a href="#memories" className="btn-outline">
-            📷 Xem kỷ niệm ↓
+            ✏️ Điền thông tin
           </a>
         </div>
       </div>

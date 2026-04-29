@@ -49,12 +49,27 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen" style={{ background: '#FDFAF6' }}>
-      <Hero />
+    <>
+      <div className="floating-cta-group" aria-label="Quick actions">
+        <a href="#invitation" className="floating-cta floating-cta-primary" aria-label="Xem thiệp mời">
+          <span className="floating-cta-icon" aria-hidden>💌</span>
+          <span className="floating-cta-text">Xem thiệp mời</span>
+        </a>
+        <a href="#datahub" className="floating-cta floating-cta-secondary" aria-label="Điền thông tin">
+          <span className="floating-cta-icon" aria-hidden>✏️</span>
+          <span className="floating-cta-text">Điền thông tin</span>
+        </a>
+        <a href="#media-upload" className="floating-cta floating-cta-secondary" aria-label="Tải ảnh và video">
+          <span className="floating-cta-icon" aria-hidden>📤</span>
+          <span className="floating-cta-text">Tải ảnh/video</span>
+        </a>
+      </div>
+      <main className="min-h-screen" style={{ background: '#FDFAF6' }}>
+        <Hero />
       <ImageCarousel />
       <Invitation />
-      <Chalkboard />
       <DataHub />
+      <Chalkboard />
 
       {/* ── Message Wall ────────────────────────────────────────── */}
       <section
@@ -126,5 +141,6 @@ export default function Home() {
         </div>
       </footer>
     </main>
+    </>
   );
 }

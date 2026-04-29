@@ -6,11 +6,8 @@ import {
   query,
   Unsubscribe,
 } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
-import { db, storage } from './firebase';
+import { db } from './firebase';
 import { MediaItem, Member, Message } from './types';
-
-const toSafePath = (value: string) => value.trim().replace(/\s+/g, '-');
 
 export async function addMember(member: Omit<Member, 'id'>): Promise<string> {
   const docRef = await addDoc(collection(db, 'members'), {
@@ -34,43 +31,45 @@ export async function uploadMediaFile(
   type: MediaItem['type'],
   onProgress?: (progress: number) => void
 ): Promise<string> {
-  const safeName = toSafePath(memberName || 'unknown');
-  const filePath = `media/${type}/${safeName}/${Date.now()}-${file.name}`;
-  const storageRef = ref(storage, filePath);
-  onProgress?.(0);
-  const task = uploadBytesResumable(storageRef, file, {
-    contentType: file.type || undefined,
+  const safeName = (memberName.trim() || 'unknown')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/đ/gi, 'd').replace(/[^a-zA-Z0-9_]/g, '-').replace(/-+/g, '-');
+  const folder = `a1bk/${type}/${safeName}`;
+
+  // Lấy signed params từ server, truyền folder để ký đúng
+  const sigRes = await fetch(`/api/upload?folder=${encodeURIComponent(folder)}`);
+  if (!sigRes.ok) throw new Error('Không lấy được thông tin upload');
+  const { cloudName, apiKey, timestamp, signature } = await sigRes.json();
+
+  const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+  const url = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('api_key', apiKey);
+  formData.append('timestamp', String(timestamp));
+  formData.append('signature', signature);
+  formData.append('folder', folder);
+
+  // Dùng XMLHttpRequest để có progress thực
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress?.(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const data = JSON.parse(xhr.responseText);
+        resolve(data.secure_url);
+      } else {
+        const err = JSON.parse(xhr.responseText);
+        reject(new Error(err.error?.message || 'Upload thất bại'));
+      }
+    };
+    xhr.onerror = () => reject(new Error('Lỗi kết nối mạng'));
+    xhr.send(formData);
   });
-
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error('Upload timeout'));
-      }, 5 * 60 * 1000);
-
-      task.on(
-        'state_changed',
-        (snapshot) => {
-          if (!onProgress) return;
-          const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          onProgress(percent);
-        },
-        (error) => {
-          clearTimeout(timeout);
-          reject(error);
-        },
-        () => {
-          clearTimeout(timeout);
-          resolve();
-        }
-      );
-    });
-
-    return getDownloadURL(task.snapshot.ref);
-  } catch (error) {
-    console.error('Firebase upload failed:', error);
-    throw error;
-  }
 }
 
 export async function addMedia(media: Omit<MediaItem, 'id' | 'timestamp'>): Promise<string> {
