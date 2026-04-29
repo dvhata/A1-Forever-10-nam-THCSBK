@@ -33,6 +33,7 @@ export const MARITAL_STATUS = ['Độc Thân', 'Kết Hôn', 'Có ny', 'Chưa y�
 
 export const LOCATIONS = [
   'Hà Nội',
+  'Thái Nguyên',
   'Sài Gòn',
   'Đà Nẵng',
   'Hải Phòng',
