@@ -4,8 +4,9 @@ interface Video { id: string; title: string; type: 'youtube' | 'mp4'; url: strin
 
 export default function VideoSection({ videos = [] }: { videos?: Video[] }) {
   const defaultVideos: Video[] = [
-    { id: '1', title: 'Kỷ Niệm Lớp A1', type: 'youtube', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
-    { id: '2', title: 'Sinh Nhật Lớp 10 Năm', type: 'youtube', url: 'https://www.youtube.com/embed/jNQXAC9IVRw' },
+    { id: '1', title: 'Vũ điệu công chịch', type: 'youtube', url: 'https://www.youtube.com/embed/AKEiaWGLuJU' },
+    { id: '2', title: 'Đại chiến bóng nước', type: 'youtube', url: 'https://www.youtube.com/embed/8sRgor2ob2Q' },
+        { id: '3', title: 'Lucky -Lucky Twice 9A1 THCSBK 2012-2016', type: 'youtube', url: 'https://www.youtube.com/embed/IXRxdsqiU9U' },
   ];
   const display = videos.length > 0 ? videos : defaultVideos;
 
@@ -18,11 +19,11 @@ export default function VideoSection({ videos = [] }: { videos?: Video[] }) {
         <div className="mb-12 reveal">
           <div className="section-label">
             <span className="text-xs font-montserrat font-semibold tracking-widest uppercase" style={{ color: '#E07898' }}>
-              Video lời nhắn
+              Looking back
             </span>
           </div>
           <h2 className="font-playfair font-bold" style={{ fontSize: 'clamp(1.8rem,4.5vw,3rem)', color: '#2C4A6E' }}>
-            Lời chúc từ lớp 🎬
+            Video kỉ niệm 🎬
           </h2>
         </div>
 

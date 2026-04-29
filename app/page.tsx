@@ -9,6 +9,7 @@ import DataHub from '@/components/DataHub';
 import { MessageWall } from '@/components/MessageWall';
 import VideoSection from '@/components/VideoSection';
 import MediaWall from '@/components/MediaWall';
+import MediaUpload from '@/components/MediaUpload';
 
 function SectionHeader({ label, title, light }: { label: string; title: string; light?: boolean }) {
   return (
@@ -71,6 +72,7 @@ export default function Home() {
 
       <VideoSection />
       <MediaWall />
+      <MediaUpload />
 
       {/* ── Footer ──────────────────────────────────────────────── */}
       <footer

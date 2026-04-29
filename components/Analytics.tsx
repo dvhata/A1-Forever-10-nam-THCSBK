@@ -311,29 +311,8 @@ export function Analytics() {
             </div>
           </div>
 
-          {/* Row 2: Bar + Vietnam Map */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            {/* Bar — chi tiết lĩnh vực */}
-            <div className="card-soft p-6">
-              <p className="text-xs font-montserrat font-semibold tracking-widest uppercase mb-1" style={{ color:'#E07898' }}>Chi tiết lĩnh vực</p>
-              <p className="text-xs font-montserrat mb-5" style={{ color:'rgba(44,74,110,0.5)' }}>Số người theo nhóm ngành</p>
-              {jobData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={240}>
-                  <BarChart data={jobData} layout="vertical" margin={{ top:0, right:20, left:110, bottom:0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(168,212,236,0.2)" horizontal={false}/>
-                    <XAxis type="number" tick={{ fill:'rgba(44,74,110,0.45)', fontSize:11 }} axisLine={false} tickLine={false}/>
-                    <YAxis dataKey="name" type="category" width={105} tick={{ fill:'#5A8FAF', fontSize:11 }} axisLine={false} tickLine={false}/>
-                    <Tooltip {...softTooltip}/>
-                    <Bar dataKey="value" radius={[0,4,4,0]} background={{ fill:'rgba(200,230,245,0.1)', radius:4 }}>
-                      {jobData.map((_,i) => <Cell key={i} fill={PALETTE[i%PALETTE.length]}/>)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : empty}
-            </div>
-
-            {/* Vietnam map + location list */}
+          {/* Row 2: Vietnam Map */}
+          <div className="grid grid-cols-1 gap-6">
             <div className="card-soft p-6">
               <p className="text-xs font-montserrat font-semibold tracking-widest uppercase mb-1" style={{ color:'#E07898' }}>Phân bố địa điểm</p>
               <p className="text-xs font-montserrat mb-5" style={{ color:'rgba(44,74,110,0.5)' }}>Nơi sinh sống của cả lớp 🗺️</p>
@@ -355,9 +334,10 @@ export function Analytics() {
           >
             <div className="col-span-1">#</div>
             <div className="col-span-3">Tên</div>
-            <div className="col-span-3">Ngành nghề</div>
+            <div className="col-span-2">Ngành nghề</div>
+            <div className="col-span-2">Chi tiết lĩnh vực</div>
             <div className="col-span-2">Hôn nhân</div>
-            <div className="col-span-3">Nơi sống</div>
+            <div className="col-span-2">Nơi làm việc</div>
           </div>
 
           {members.length === 0 ? (
@@ -381,17 +361,19 @@ export function Analytics() {
               </div>
               <div className="col-span-3">
                 <p style={{ color:'#2C4A6E' }}>{m.name}</p>
-                {m.jobDetail && <p className="text-xs mt-0.5 truncate" style={{ color:'rgba(44,74,110,0.45)' }}>{m.jobDetail}</p>}
               </div>
-              <div className="col-span-3">
+              <div className="col-span-2">
                 {m.jobCategory
                   ? <span className="inline-block px-2 py-0.5 text-xs rounded-full" style={{ background:'rgba(242,167,184,0.18)', color:'#C0607E', border:'1px solid rgba(224,120,152,0.25)' }}>{m.jobCategory}</span>
                   : <span style={{ color:'rgba(44,74,110,0.25)' }}>—</span>}
               </div>
               <div className="col-span-2 text-xs" style={{ color:'#5A8FAF' }}>
+                {m.jobDetail || '—'}
+              </div>
+              <div className="col-span-2 text-xs" style={{ color:'#5A8FAF' }}>
                 {m.maritalStatus ? `${MARITAL_ICONS[m.maritalStatus]??''} ${m.maritalStatus}` : '—'}
               </div>
-              <div className="col-span-3 text-xs" style={{ color:'#5A8FAF' }}>
+              <div className="col-span-2 text-xs" style={{ color:'#5A8FAF' }}>
                 {m.location||'—'}
               </div>
             </div>
