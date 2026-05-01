@@ -81,7 +81,7 @@
 - [x] Immutable state updates
 
 ### Form Validation ✅
-- [x] All 6 required fields validated
+- [x] All 7 required fields validated
 - [x] Clear error messages for missing fields
 - [x] Error messages in Vietnamese
 - [x] Validation runs before submission
@@ -91,6 +91,7 @@
 - [x] Name: Searchable dropdown (44 members)
 - [x] Job Category: Dropdown (8 categories)
 - [x] Job Detail: Text input
+- [x] Work Unit: Text input
 - [x] Marital Status: Dropdown (3 options)
 - [x] Location: Dropdown (7 locations)
 - [x] Message: Textarea (optional)

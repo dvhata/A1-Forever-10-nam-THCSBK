@@ -183,7 +183,7 @@ const filteredMembers = useMemo(() => {
 ```
 
 **Validation:**
-- All 6 required fields: name, job category, job detail, marital status, location, message
+- All 7 required fields: name, job category, job detail, work unit, marital status, location, message
 - Prevents duplicate submission per member
 - Clear error messages in Vietnamese
 
@@ -191,9 +191,10 @@ const filteredMembers = useMemo(() => {
 1. Name (searchable dropdown) - 44 class members
 2. Job Category (dropdown) - 8 categories
 3. Job Detail (text input) - free text entry
-4. Marital Status (dropdown) - 3 options
-5. Location (dropdown) - 7 locations
-6. Message (textarea) - optional
+4. Work Unit (text input) - free text entry
+5. Marital Status (dropdown) - 3 options
+6. Location (dropdown) - 7 locations
+7. Message (textarea) - optional
 
 ---
 
