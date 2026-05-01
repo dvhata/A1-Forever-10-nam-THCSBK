@@ -26,14 +26,16 @@ export const JOB_CATEGORIES = [
   'Xây Dựng',
   'Bán Hàng - Marketing',
   'Nhân Sự',
+  'Quân Đội',
   'Khác',
 ];
 
 export const MARITAL_STATUS = ['Độc Thân', 'Kết Hôn', 'Có ny', 'Chưa yêu ai bao giờ', 'Ế', 'Khác'];
 
 export const LOCATIONS = [
+  'Thái Nguyên',
   'Hà Nội',
-  'Sài Gòn',
+  'Thành Phố Hồ Chí Minh',
   'Đà Nẵng',
   'Hải Phòng',
   'Cần Thơ',

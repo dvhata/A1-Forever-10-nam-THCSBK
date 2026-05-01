@@ -87,7 +87,7 @@ export default function Home() {
 
       <VideoSection />
       <MediaWall />
-      <MediaUpload />
+      {/* <MediaUpload /> */}
 
       {/* ── Footer ──────────────────────────────────────────────── */}
       <footer

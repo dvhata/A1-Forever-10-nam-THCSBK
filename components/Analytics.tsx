@@ -5,7 +5,6 @@ import { AnalyticsData, Member, Message } from '@/lib/types';
 import {
   PieChart, Pie, Cell, Tooltip,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   ResponsiveContainer,
 } from 'recharts';
 import { subscribeToMembers, subscribeToMessages } from '@/lib/firebaseService';
@@ -37,10 +36,12 @@ const softTooltip = {
  * Phần bắc rộng, eo miền Trung hẹp, phần Nam phình to → hình S rõ
  */
 const VN_MAP_COORDS: Record<string,[number,number]> = {
-  'Bắc Kạn':    [62, 62],
-  'Hà Nội':     [70, 82],
-  'Hải Phòng':  [85, 90],
+  'Bắc Kạn':    [55, 58],
+  'Thái Nguyên': [63, 70],
+  'Hà Nội':     [72, 84],
+  'Hải Phòng':  [88, 90],
   'Đà Nẵng':   [90, 200],
+  'Thành Phố Hồ Chí Minh': [82, 330],
   'Sài Gòn':   [82, 330],
   'Cần Thơ':   [70, 360],
   'Nước Ngoài': [125, 30],
@@ -138,24 +139,30 @@ function VietnamMap({ locationsData }: { locationsData: {name:string;value:numbe
               {/* Dot */}
               <circle cx={cx} cy={cy} r={r} fill={PALETTE[i % PALETTE.length]} opacity="0.9" />
               <circle cx={cx} cy={cy} r={r * 0.45} fill="white" opacity="0.7" />
-              {/* Label */}
-              <text
-                x={cx + r + 4}
-                y={cy + 4}
-                fontSize="9"
-                fill="#3D5A7A"
-                fontFamily="Montserrat, sans-serif"
-                fontWeight="600"
-              >
-                {loc.name.split(' ').pop()} ({loc.value})
-              </text>
+              {/* Label — tên đầy đủ, xuống dòng nếu dài */}
+              {loc.name.split(' ').length > 2 ? (
+                <text fontSize="8.5" fill="#3D5A7A" fontFamily="Montserrat, sans-serif" fontWeight="600">
+                  <tspan x={cx + r + 4} y={cy}>{loc.name.split(' ').slice(0, Math.ceil(loc.name.split(' ').length / 2)).join(' ')}</tspan>
+                  <tspan x={cx + r + 4} dy="10">{loc.name.split(' ').slice(Math.ceil(loc.name.split(' ').length / 2)).join(' ')} ({loc.value})</tspan>
+                </text>
+              ) : (
+                <text
+                  x={cx + r + 4}
+                  y={cy + 4}
+                  fontSize="8.5"
+                  fill="#3D5A7A"
+                  fontFamily="Montserrat, sans-serif"
+                  fontWeight="600"
+                >
+                  {loc.name} ({loc.value})
+                </text>
+              )}
             </g>
           );
         })}
 
         {/* "Nước Ngoài" label at top right */}
         {locationsData.find(d => d.name === 'Nước Ngoài') && (() => {
-          const d = locationsData.find(x => x.name === 'Nước Ngoài')!;
           return (
             <g>
               <line x1="140" y1="60" x2="162" y2="60" stroke="#C4B5E0" strokeWidth="1" strokeDasharray="3,2"/>
@@ -219,7 +226,6 @@ export function Analytics() {
 
   const maritalData = Object.entries(analytics.maritalStatus).map(([name,value]) => ({name,value}));
   const jobData     = Object.entries(analytics.jobCategories).map(([name,value]) => ({name,value}));
-  const radarData   = jobData.map(d => ({ subject: d.name.replace('Công Nghệ ','IT ').split(' ').slice(0,2).join(' '), value: d.value }));
   const locData     = Object.entries(analytics.locations).map(([name,value]) => ({name,value})).sort((a,b)=>b.value-a.value).slice(0,8);
 
   const empty = <p className="text-center py-8 text-sm font-montserrat" style={{ color:'rgba(44,74,110,0.4)' }}>Chưa có dữ liệu</p>;
@@ -293,19 +299,34 @@ export function Analytics() {
               ) : empty}
             </div>
 
-            {/* Radar — ngành nghề */}
+            {/* Bar — ngành nghề */}
             <div className="card-soft p-6">
               <p className="text-xs font-montserrat font-semibold tracking-widest uppercase mb-1" style={{ color:'#E07898' }}>Ngành nghề</p>
               <p className="text-xs font-montserrat mb-5" style={{ color:'rgba(44,74,110,0.5)' }}>Phân bố theo lĩnh vực</p>
-              {radarData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={250}>
-                  <RadarChart data={radarData}>
-                    <PolarGrid stroke="rgba(168,212,236,0.35)"/>
-                    <PolarAngleAxis dataKey="subject" tick={{ fill:'#5A8FAF', fontSize:11 }} tickLine={false}/>
-                    <PolarRadiusAxis tick={{ fill:'rgba(44,74,110,0.35)', fontSize:9 }} axisLine={false} tickLine={false}/>
-                    <Radar name="Số lượng" dataKey="value" stroke="#E07898" fill="#F2A7B8" fillOpacity={0.3} strokeWidth={2}/>
-                    <Tooltip {...softTooltip}/>
-                  </RadarChart>
+              {jobData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={jobData} margin={{ top:4, right:8, left:-18, bottom:60 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(168,212,236,0.25)" vertical={false}/>
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fill:'#5A8FAF', fontSize:10, fontFamily:'Montserrat, sans-serif' }}
+                      tickLine={false}
+                      axisLine={false}
+                      angle={-35}
+                      textAnchor="end"
+                      interval={0}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fill:'rgba(44,74,110,0.4)', fontSize:10 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip {...softTooltip} formatter={(v:number) => [v, 'Số người']}/>
+                    <Bar dataKey="value" name="Số người" radius={[6,6,0,0]}>
+                      {jobData.map((_,i) => <Cell key={i} fill={PALETTE[i%PALETTE.length]}/>)}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               ) : empty}
             </div>
